@@ -1,0 +1,59 @@
+<?php
+// Dados de conexão
+$servidor = "localhost";
+$usuario = "root";
+$senha = "";
+$banco = "contato_portfolio";
+$porta = 3309;
+
+// Verificar se é POST
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    
+    // SIMPLES - só mostrar que recebeu os dados
+    echo "<h1>DADOS RECEBIDOS!</h1>";
+    echo "<p>Nome: " . ($_POST['nome'] ?? 'Não informado') . "</p>";
+    echo "<p>Email: " . ($_POST['email'] ?? 'Não informado') . "</p>";
+    echo "<p>Telefone: " . ($_POST['telefone'] ?? 'Não informado') . "</p>";
+    echo "<p>Assunto: " . ($_POST['assunto'] ?? 'Não informado') . "</p>";
+    echo "<p>Mensagem: " . ($_POST['mensagem'] ?? 'Não informada') . "</p>";
+    
+    // Tentar conectar ao banco
+    echo "<h2>Tentando conectar ao banco...</h2>";
+    
+    try {
+        $conexao = new mysqli($servidor, $usuario, $senha, $banco, $porta);
+        
+        if ($conexao->connect_error) {
+            echo "<p style='color: red'>❌ ERRO: " . $conexao->connect_error . "</p>";
+        } else {
+            echo "<p style='color: green'>✅ CONECTADO!</p>";
+            
+            // Inserir dados
+            $nome = $conexao->real_escape_string($_POST['nome']);
+            $telefone = $conexao->real_escape_string($_POST['telefone']);
+            $email = $conexao->real_escape_string($_POST['email']);
+            $empresa = $conexao->real_escape_string($_POST['empresa'] ?? '');
+            $assunto = $conexao->real_escape_string($_POST['assunto']);
+            $mensagem = $conexao->real_escape_string($_POST['mensagem']);
+            
+            $sql = "INSERT INTO mensagens (nome, telefone, email, empresa, assunto, mensagem) 
+                    VALUES ('$nome', '$telefone', '$email', '$empresa', '$assunto', '$mensagem')";
+            
+            if ($conexao->query($sql)) {
+                echo "<p style='color: green'>✅ DADOS SALVOS! ID: " . $conexao->insert_id . "</p>";
+            } else {
+                echo "<p style='color: red'>❌ ERRO AO SALVAR: " . $conexao->error . "</p>";
+            }
+            
+            $conexao->close();
+        }
+    } catch (Exception $e) {
+        echo "<p style='color: red'>❌ EXCEÇÃO: " . $e->getMessage() . "</p>";
+    }
+    
+    echo '<br><a href="formulario.html">← Voltar</a>';
+    
+} else {
+    echo "Acesso direto não permitido. <a href='formulario.html'>Ir para formulário</a>";
+}
+?>
